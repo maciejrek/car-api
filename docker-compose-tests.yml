@@ -1,0 +1,14 @@
+version: "3"
+services:
+    db:
+        image: "postgres:alpine"
+        restart: always
+        env_file:
+            - db.env
+        ports:
+            - "8057:5432"
+        expose:
+            - "8057"
+
+volumes:
+    postgres_data:

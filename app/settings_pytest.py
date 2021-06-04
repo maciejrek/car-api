@@ -13,11 +13,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 
-if not os.getenv("FROM_DOCKER"):
-    from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-    dotenv_path = Path("local.env")
-    load_dotenv(dotenv_path=dotenv_path, override=True)
+dotenv_path = Path("test.env")
+load_dotenv(dotenv_path=dotenv_path, override=True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,7 +85,7 @@ WSGI_APPLICATION = "app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("POSTGRES_ENGINE"),
-        "NAME": os.environ.get("POSTGRES_DB"),
+        "NAME": "test_db",
         "USER": os.environ.get("POSTGRES_USER"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": os.environ.get("POSTGRES_HOST"),
