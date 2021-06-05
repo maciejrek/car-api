@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 if not os.getenv("FROM_DOCKER"):
     from dotenv import load_dotenv
@@ -144,7 +144,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
-        # 'rest_framework.renderers.BrowsableAPIRenderer',
         "rest_framework.renderers.JSONRenderer",
     ]
 }

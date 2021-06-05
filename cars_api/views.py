@@ -1,12 +1,13 @@
-from rest_framework import generics
+import requests
+from django.db.models import Avg, Count
 from django.http import Http404
-from .models import Car, Rate
-from .serializers import CarSerializer, RateSerializer
-from .external_api import external_api_view
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.request import Request
 from rest_framework.response import Response
-from django.db.models import Count, Avg
+
+from .external_api import external_api_call
+from .models import Car, Rate
+from .serializers import CarSerializer, RateSerializer
 
 
 class ListCarGenerics(generics.ListCreateAPIView):
@@ -41,23 +42,27 @@ class ListCarGenerics(generics.ListCreateAPIView):
         serializer = CarSerializer(data=request.data, fields=("make", "model"))
         serializer.is_valid(raise_exception=True)
 
-        car_make = serializer.validated_data.get("make")
-        car_model = serializer.validated_data.get("model")
+        car_make = serializer.validated_data.get("make", "")
+        car_model = serializer.validated_data.get("model", "")
 
-        if external_api_view(request, car_model, car_make):
-            self.perform_create(serializer)
-            return Response(serializer.data)
-        else:
-            return Response(
-                data={
-                    "external_api_error": f"No matching result in external api for {car_make} {car_model}, or API unavailable."
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        try:
+            # We don't need a data from external api, but external api call is designed to return received data
+            external_api_call(request, car_model, car_make)
+        # Both exceptions point to error on external api side. I've used general 500 code, but it could be changed
+        # to be more specific (500 for the first exception, and 503 for the second one ?)
+        except (requests.exceptions.RequestException, ConnectionError) as e:
+            return Response(data={"external_api_error": f"{e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except AttributeError as e:
+            return Response(data={"external_api_error": f"{e}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response(data={"external_api_error": f"{e}"}, status=status.HTTP_404_NOT_FOUND)
+
+        self.perform_create(serializer)
+        return Response(serializer.data)
 
 
 class DetailCarGenerics(generics.DestroyAPIView):
-    """Delete handle for /cars/<pk> endpoint."""
+    """Delete handle for /cars/<pk>/ endpoint."""
 
     queryset = Car.objects.all()
     serializer_class = CarSerializer

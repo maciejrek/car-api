@@ -1,9 +1,16 @@
+from collections import OrderedDict
+
 import pytest
 from pytest_mock import MockerFixture
+from requests.exceptions import RequestException
 from rest_framework import status
-from cars_api.models import Car, Rate
 from rest_framework.exceptions import ErrorDetail
-from collections import OrderedDict
+from rest_framework.test import APIRequestFactory
+
+from cars_api.external_api import external_api_call
+from cars_api.models import Car, Rate
+
+"""######### AUX #########"""
 
 
 def add_marks(*args):  # type: ignore
@@ -17,10 +24,33 @@ def add_marks(*args):  # type: ignore
     return _
 
 
+class MockResponse:
+    """Mock response object in external_api tests."""
+
+    def __init__(self, json_data, status_code, url=""):
+        """Init method of MockResponse class.
+
+        Args:
+            json_data: Mocked data
+            status_code: Mocked status code
+            url: mocked url..
+        """
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        """Return mocked data.
+
+        Returns:
+            Dict: return mocked data as dict.
+        """
+        return self.json_data
+
+
 @pytest.fixture(scope="function")
 def positive_response_from_external_api(mocker: MockerFixture):
     mocker.patch(
-        "cars_api.views.external_api_view",
+        "cars_api.views.external_api_call",
         return_value={
             "Count": 3,
             "Message": "Response returned successfully",
@@ -32,11 +62,6 @@ def positive_response_from_external_api(mocker: MockerFixture):
             ],
         },
     )
-
-
-@pytest.fixture(scope="function")
-def negative_response_from_external_api(mocker: MockerFixture):
-    mocker.patch("cars_api.views.external_api_view", return_value=[])
 
 
 @pytest.fixture(scope="function")
@@ -62,6 +87,25 @@ def db_with_multiple_car_and_rating_records(db):
 @pytest.fixture(scope="function")
 def db_with_single_car_record(db):
     Car.objects.create(model="Honda", make="Civic")
+
+
+def mock_external_api_call_raise_value_error(request, car_model, car_make):
+    raise ValueError(f"No matching result in external api for {car_make} {car_model}")
+
+
+def mock_external_api_call_raise_connection_error(request, car_model, car_make):
+    raise ConnectionError("External api error or API unavailable")
+
+
+def mock_external_api_call_raise_attribute_error(request, car_model, car_make):
+    raise AttributeError("Wrong request method (post required) or missing api url env variable")
+
+
+def mock_external_api_call_raise_request_exception(request, car_model, car_make):
+    raise RequestException("")
+
+
+"""######### Views Tests #########"""
 
 
 @add_marks("positive_case", "post", "cars_endpoint")
@@ -136,18 +180,62 @@ def test_post_cars_endpoint_negative_case_missing_make(positive_response_from_ex
     assert len(Car.objects.all()) == 0
 
 
-@add_marks("negative_case", "post", "cars_endpoint")
+@add_marks("negative_case", "post", "cars_endpoint", "external_api")
 @pytest.mark.django_db(reset_sequences=True)
-def test_post_cars_endpoint_negative_case_negative_response_from_external_api(negative_response_from_external_api, client):
+def test_post_cars_endpoint_negative_case_no_matching_results_from_external_api(mocker, client):
+    mocker.patch("cars_api.views.external_api_call", new=mock_external_api_call_raise_value_error)
     # create car with mocked response from external api
     car_make = "Honda"
     car_model = "Civic"
-    expected_response = {
-        "external_api_error": f"No matching result in external api for {car_make} {car_model}, or API unavailable."
-    }
+    expected_response = {"external_api_error": f"No matching result in external api for {car_make} {car_model}"}
     response = client.post("/cars/", {"make": {car_make}, "model": {car_model}})
     # validate results
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.data == expected_response
+    assert len(Car.objects.all()) == 0
+
+
+@add_marks("negative_case", "post", "cars_endpoint", "external_api")
+@pytest.mark.django_db(reset_sequences=True)
+def test_post_cars_endpoint_negative_case_incorrect_request_type_or_no_api_url(mocker, client):
+    mocker.patch("cars_api.views.external_api_call", new=mock_external_api_call_raise_attribute_error)
+    # create car with mocked response from external api
+    car_make = "Honda"
+    car_model = "Civic"
+    expected_response = {"external_api_error": "Wrong request method (post required) or missing api url env variable"}
+    response = client.post("/cars/", {"make": {car_make}, "model": {car_model}})
+    # validate results
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == expected_response
+    assert len(Car.objects.all()) == 0
+
+
+@add_marks("negative_case", "post", "cars_endpoint", "external_api")
+@pytest.mark.django_db(reset_sequences=True)
+def test_post_cars_endpoint_negative_case_response_code_other_than_200(mocker, client):
+    mocker.patch("cars_api.views.external_api_call", new=mock_external_api_call_raise_connection_error)
+    # create car with mocked response from external api
+    car_make = "Honda"
+    car_model = "Civic"
+    expected_response = {"external_api_error": "External api error or API unavailable"}
+    response = client.post("/cars/", {"make": {car_make}, "model": {car_model}})
+    # validate results
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.data == expected_response
+    assert len(Car.objects.all()) == 0
+
+
+@add_marks("negative_case", "post", "cars_endpoint", "external_api")
+@pytest.mark.django_db(reset_sequences=True)
+def test_post_cars_endpoint_negative_case_external_request_exception(mocker, client):
+    mocker.patch("cars_api.views.external_api_call", new=mock_external_api_call_raise_request_exception)
+    # create car with mocked response from external api
+    car_make = "Honda"
+    car_model = "Civic"
+    expected_response = {"external_api_error": ""}
+    response = client.post("/cars/", {"make": {car_make}, "model": {car_model}})
+    # validate results
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert response.data == expected_response
     assert len(Car.objects.all()) == 0
 
@@ -198,7 +286,7 @@ def test_delete_cars_endpoint_positive_case(db_with_multiple_car_records, client
 
     # remove car with pk=1
     expected_response = {"message": "Record deleted"}
-    response = client.delete("/cars/1")
+    response = client.delete("/cars/1/")
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert response.data == expected_response
     assert len(Car.objects.all()) == 2
@@ -218,7 +306,7 @@ def test_delete_cars_endpoint_negative_case_record_does_not_exist(client):
     assert len(Car.objects.all()) == 0
     # remove car with pk=1
     expected_response = {"validation_error": "Record doesn't exist"}
-    response = client.delete("/cars/1")
+    response = client.delete("/cars/1/")
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.data == expected_response
 
@@ -246,6 +334,13 @@ def test_post_rate_endpoint_positive_case(client, db_with_single_car_record):
     response = client.post("/rate/", {"car_id": 1, "rating": 4})
     assert response.status_code == status.HTTP_201_CREATED
     assert len(Rate.objects.all()) == 2
+    assert response.data == expected_response
+    # get list of cars
+    expected_response = [
+        {"id": 1, "make": "Civic", "model": "Honda", "avg_rating": 4.5},
+    ]
+    response = client.get("/cars/")
+    assert response.status_code == status.HTTP_200_OK
     assert response.data == expected_response
 
 
@@ -292,16 +387,91 @@ def test_get_popular_endpoint_positive_case(client, db_with_multiple_car_and_rat
     assert response.data == expected_response
 
 
-@add_marks("aux")
+"""######### Models Tests #########"""
+
+
+@add_marks("aux", "model")
 def test_car_model_aux_methods():
     car = Car(model="Honda", make="Accord")
     assert str(car) == "Honda Accord"
     assert car.to_dict() == {"make": "Accord", "model": "Honda"}
 
 
-@add_marks("aux")
+@add_marks("aux", "model")
 def test_rate_mode_aux_methods():
     car = Car(model="Honda", make="Accord")
     rate = Rate(car_id=car, rating=4)
     assert str(rate) == f"{str(car)}: 4"
     assert rate.to_dict() == {"car": {"make": "Accord", "model": "Honda"}, "rate": 4}
+
+
+"""######### Aux Tests #########"""
+
+
+@add_marks("aux", "external_api")
+def test_external_call_api():
+    factory = APIRequestFactory()
+    request = factory.get("")
+    with pytest.raises(AttributeError, match="Wrong request method \\(post required\\) or missing api url env variable"):
+        external_api_call(request, "", "")  # type: ignore
+
+
+@add_marks("aux", "external_api")
+def test_external_call_api_2(mocker):
+    factory = APIRequestFactory()
+    request = factory.post("")
+    mocker.patch(
+        "cars_api.external_api.requests.get", return_value=MockResponse(json_data={}, status_code=status.HTTP_400_BAD_REQUEST)
+    )
+
+    with pytest.raises(ConnectionError, match="External api error or API unavailable"):
+        external_api_call(request, "", "")  # type: ignore
+
+
+@add_marks("aux", "external_api")
+def test_external_call_api_3(mocker):
+    mocked_response_data = {
+        "Count": 1,
+        "Message": "Response returned successfully",
+        "SearchCriteria": "Make:honda",
+        "Results": [
+            {"Make_ID": 474, "Make_Name": "HONDA", "Model_ID": 1861, "Model_Name": "Accord"},
+        ],
+    }
+    factory = APIRequestFactory()
+    request = factory.post("")
+    mocker.patch(
+        "cars_api.external_api.requests.get",
+        return_value=MockResponse(
+            json_data=mocked_response_data,
+            status_code=status.HTTP_200_OK,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="No matching result in external api for Honda Civic"):
+        external_api_call(request, car_make="Honda", car_model="Civic")  # type: ignore
+
+
+@add_marks("aux", "external_api")
+def test_external_call_api_4(mocker):
+    mocked_response_data = {
+        "Count": 1,
+        "Message": "Response returned successfully",
+        "SearchCriteria": "Make:honda",
+        "Results": [
+            {"Make_ID": 474, "Make_Name": "HONDA", "Model_ID": 1861, "Model_Name": "Accord"},
+        ],
+    }
+    factory = APIRequestFactory()
+    request = factory.post("")
+    mocker.patch(
+        "cars_api.external_api.requests.get",
+        return_value=MockResponse(
+            json_data=mocked_response_data,
+            status_code=status.HTTP_200_OK,
+        ),
+    )
+
+    resp = external_api_call(request, car_make="Honda", car_model="Accord")  # type: ignore
+
+    assert resp == [{"Make_ID": 474, "Make_Name": "HONDA", "Model_ID": 1861, "Model_Name": "Accord"}]
