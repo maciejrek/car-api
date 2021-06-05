@@ -372,6 +372,28 @@ def test_post_rate_endpoint_negative_case_no_car_record(client):
     assert response.data == expected_response
 
 
+@add_marks("negative_case", "post", "rate_endpoint")
+@pytest.mark.django_db(reset_sequences=True)
+def test_post_rate_endpoint_negative_case_no_rate_param(client, db_with_single_car_record):
+    # add rating to car"rating": [
+    expected_response = {"rating": [ErrorDetail(string="This field is required.", code="required")]}
+    response = client.post("/rate/", {"car_id": 1})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(Rate.objects.all()) == 0
+    assert response.data == expected_response
+
+
+@add_marks("negative_case", "post", "rate_endpoint")
+@pytest.mark.django_db(reset_sequences=True)
+def test_post_rate_endpoint_negative_case_no_car_id_param(client):
+    # add rating to car"rating": [
+    expected_response = {"car_id": [ErrorDetail(string="This field is required.", code="required")]}
+    response = client.post("/rate/", {"rating": 1})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(Rate.objects.all()) == 0
+    assert response.data == expected_response
+
+
 @add_marks("positive_case", "get", "popular_endpoint")
 @pytest.mark.django_db(reset_sequences=True)
 def test_get_popular_endpoint_positive_case(client, db_with_multiple_car_and_rating_records):
@@ -408,16 +430,16 @@ def test_rate_mode_aux_methods():
 """######### Aux Tests #########"""
 
 
-@add_marks("aux", "external_api")
-def test_external_call_api():
+@add_marks("aux", "external_api", "negative_case")
+def test_external_api_call_negative_case_raises_attribute_error():
     factory = APIRequestFactory()
     request = factory.get("")
     with pytest.raises(AttributeError, match="Wrong request method \\(post required\\) or missing api url env variable"):
         external_api_call(request, "", "")  # type: ignore
 
 
-@add_marks("aux", "external_api")
-def test_external_call_api_2(mocker):
+@add_marks("aux", "external_api", "negative_case")
+def test_external_api_call_negative_case_raises_connection_error(mocker):
     factory = APIRequestFactory()
     request = factory.post("")
     mocker.patch(
@@ -428,8 +450,8 @@ def test_external_call_api_2(mocker):
         external_api_call(request, "", "")  # type: ignore
 
 
-@add_marks("aux", "external_api")
-def test_external_call_api_3(mocker):
+@add_marks("aux", "external_api", "negative_case")
+def test_external_api_call_negative_case_raises_value_error(mocker):
     mocked_response_data = {
         "Count": 1,
         "Message": "Response returned successfully",
@@ -452,8 +474,8 @@ def test_external_call_api_3(mocker):
         external_api_call(request, car_make="Honda", car_model="Civic")  # type: ignore
 
 
-@add_marks("aux", "external_api")
-def test_external_call_api_4(mocker):
+@add_marks("aux", "external_api", "positive_case")
+def test_external_api_call_positive_case(mocker):
     mocked_response_data = {
         "Count": 1,
         "Message": "Response returned successfully",
