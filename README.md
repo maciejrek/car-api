@@ -178,3 +178,30 @@ curl --location --request POST 'vast-meadow-68757.herokuapp.com/rate/' \
     "rating": 2
 }'
 ```
+
+## Backup Api
+
+There's backup api functionality, just in case first external api won't work.
+
+It can be tested localy, we need to add env_variables to .env files
+```bash
+BACKUP_API_KEY=<api.rawg.io api key>
+BACKUP_EXTERNAL_API_URL=https://api.rawg.io/api
+```
+
+and there'll be access to backup endpoints:
+
+## Available endpoints:
+[Api](https://rawg.io/apidocs)
+
+/games/
+
+/games/int:pk/
+
+/games_popular/
+
+/games_rate/
+
+Instead of Car.model and Car.make, there'll be Game.name and Game.platform, Rate.car_id changes to GameRate.game_id.
+
+To test this api make proper changes in your requests (both endpoits and body)

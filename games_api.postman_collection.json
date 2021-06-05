@@ -1,12 +1,12 @@
 {
 	"info": {
-		"_postman_id": "95ee7f3a-bbe6-437a-b787-8333a3863c89",
-		"name": "car_api",
+		"_postman_id": "bbaadbc8-a74d-4800-90fd-92048cff408c",
+		"name": "games_api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Cars",
+			"name": "Games",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -22,12 +22,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}
@@ -51,12 +51,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{url}}/popular/",
+					"raw": "{{url}}/games_popular/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"popular",
+						"games_popular",
 						""
 					]
 				}
@@ -64,7 +64,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars/<pk>",
+			"name": "Games/<pk>",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -80,12 +80,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{url}}/cars/1/",
+					"raw": "{{url}}/games/1/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						"1",
 						""
 					]
@@ -94,7 +94,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars/<pk> (invalid, record does not exist)",
+			"name": "Games/<pk> (invalid, record does not exist)",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -114,12 +114,12 @@
 					"raw": "{}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/12314124134124",
+					"raw": "{{url}}/games/12314124134124",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						"12314124134124"
 					]
 				}
@@ -144,15 +144,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"car_id\": 3,\n    \"rating\": 2\n}"
+					"raw": "{\n    \"game_id\": 2,\n    \"rating\": 3\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -177,15 +177,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"car_id\": 1,\n    \"rating\": 0\n}"
+					"raw": "{\n    \"game_id\": 1,\n    \"rating\": 0\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -210,15 +210,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"car_id\": 1,\n    \"rating\": 17\n}"
+					"raw": "{\n    \"game_id\": 1,\n    \"rating\": 17\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -246,12 +246,12 @@
 					"raw": "{\n    \"rating\": 4\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -276,15 +276,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"car_id\": 1\n}"
+					"raw": "{\n    \"game_id\": 1\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -309,15 +309,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"car_id\": 399999999999999999,\n    \"rating\": 4\n}"
+					"raw": "{\n    \"game_id\": 399999999999999999,\n    \"rating\": 4\n}"
 				},
 				"url": {
-					"raw": "{{url}}/rate/",
+					"raw": "{{url}}/games_rate/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"rate",
+						"games_rate",
 						""
 					]
 				}
@@ -325,7 +325,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars (create_1)",
+			"name": "Games (create_1)",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -342,15 +342,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"make\": \"Volkswagen\",\n    \"model\": \"Golf\"\n}"
+					"raw": "{\n    \"platform\": \"PC\",\n    \"name\": \"Mario\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}
@@ -358,7 +358,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars (invalid input, missing model)",
+			"name": "Games (invalid input, missing platform)",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -375,15 +375,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"make\" : \"Volkswagen\"\n}"
+					"raw": "{\n    \"name\": \"Mario\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}
@@ -391,7 +391,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars (invalid input, missing make)",
+			"name": "Games (invalid input, missing name",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -408,15 +408,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"model\" : \"Golf\"\n}"
+					"raw": "{\n    \"platform\": \"PC\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}
@@ -424,7 +424,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars (create_2)",
+			"name": "Games (create_2)",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -441,15 +441,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"make\" : \"Volkswagen\",\n  \"model\" : \"Passat\"\n}"
+					"raw": "{\n    \"platform\": \"PC\",\n    \"name\": \"Rayman\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}
@@ -457,7 +457,7 @@
 			"response": []
 		},
 		{
-			"name": "Cars (create_3)",
+			"name": "Games (create_3)",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {
 					"content-type": true
@@ -474,15 +474,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"make\" : \"Honda\",\n  \"model\" : \"Civic\"\n}"
+					"raw": "{\n    \"platform\": \"PC\",\n    \"name\": \"GTA\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/cars/",
+					"raw": "{{url}}/games/",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"cars",
+						"games",
 						""
 					]
 				}

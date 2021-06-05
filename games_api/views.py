@@ -6,15 +6,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .external_api import external_api_call
-from .models import Car, Rate
-from .serializers import CarSerializer, RateSerializer
+from .models import Game, GameRate
+from .serializers import GameSerializer, GameRateSerializer
 
 
-class ListCarGenerics(generics.ListCreateAPIView):
-    """Post and Get handle for /cars/ endpoint."""
+class ListGameGenerics(generics.ListCreateAPIView):
+    """Post and Get handle for /games/ endpoint."""
 
-    queryset = Car.objects.all()
-    serializer_class = CarSerializer
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
 
     def list(self, request: Request) -> Response:
         """Overridden list method.
@@ -24,10 +24,10 @@ class ListCarGenerics(generics.ListCreateAPIView):
             request (Request): Input data
 
         Returns:
-            Response: Response with car object list.
+            Response: Response with game object list.
         """
-        queryset = Car.objects.annotate(avg_rating=Avg("rate__rating")).order_by("-avg_rating")
-        serializer = CarSerializer(queryset, fields=("id", "make", "model", "avg_rating"), many=True)
+        queryset = Game.objects.annotate(avg_rating=Avg("gamerate__rating")).order_by("-avg_rating")
+        serializer = GameSerializer(queryset, fields=("id", "platform", "name", "avg_rating"), many=True)
         return Response(serializer.data)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
@@ -39,15 +39,15 @@ class ListCarGenerics(generics.ListCreateAPIView):
         Returns:
             Response: Response data varies on validation and external api communication status.
         """
-        serializer = CarSerializer(data=request.data, fields=("make", "model"))
+        serializer = GameSerializer(data=request.data, fields=("platform", "name"))
         serializer.is_valid(raise_exception=True)
 
-        car_make = serializer.validated_data.get("make", "")
-        car_model = serializer.validated_data.get("model", "")
+        game_platform = serializer.validated_data.get("platform", "")
+        game_name = serializer.validated_data.get("name", "")
 
         try:
             # We don't need a data from external api, but external api call is designed to return received data
-            external_api_call(request, car_model, car_make)
+            external_api_call(request, game_platform, game_name)
         # Both exceptions point to error on external api side. I've used general 500 code, but it could be changed
         # to be more specific (500 for the first exception, and 503 for the second one ?)
         except (requests.exceptions.RequestException, ConnectionError) as e:
@@ -61,11 +61,11 @@ class ListCarGenerics(generics.ListCreateAPIView):
         return Response(serializer.data)
 
 
-class DestroyCarGenerics(generics.DestroyAPIView):
-    """Delete handle for /cars/<pk>/ endpoint."""
+class DestroyGameGenerics(generics.DestroyAPIView):
+    """Delete handle for /games/<pk>/ endpoint."""
 
-    queryset = Car.objects.all()
-    serializer_class = CarSerializer
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         """Overriden destroy method.
@@ -85,11 +85,11 @@ class DestroyCarGenerics(generics.DestroyAPIView):
         return Response(data={"message": "Record deleted"}, status=status.HTTP_200_OK)
 
 
-class PopularCarGenerics(generics.ListAPIView):
-    """Get handle for /popular/ endpoint."""
+class PopularGameGenerics(generics.ListAPIView):
+    """Get handle for /games_popular/ endpoint."""
 
-    queryset = Car.objects.annotate(rates_number=Count("rate")).order_by("-rates_number")
-    serializer_class = CarSerializer
+    queryset = Game.objects.annotate(rates_number=Count("gamerate")).order_by("-rates_number")
+    serializer_class = GameSerializer
 
     def list(self, request: Request) -> Response:
         """Overridden list method.
@@ -99,15 +99,15 @@ class PopularCarGenerics(generics.ListAPIView):
             request (Request): Input data
 
         Returns:
-            Response: Response with car object list, ordered by avg_rating
+            Response: Response with game object list, ordered by avg_rating
         """
         queryset = self.get_queryset()
-        serializer = CarSerializer(queryset, fields=("id", "make", "model", "rates_number"), many=True)
+        serializer = GameSerializer(queryset, fields=("id", "platform", "name", "rates_number"), many=True)
         return Response(serializer.data)
 
 
-class CreateRateGenerics(generics.CreateAPIView):
-    """Post handle for /rate/ endpoint."""
+class CreateGameRateGenerics(generics.CreateAPIView):
+    """Post handle for /games_rate/ endpoint."""
 
-    queryset = Rate.objects.all()
-    serializer_class = RateSerializer
+    queryset = GameRate.objects.all()
+    serializer_class = GameRateSerializer

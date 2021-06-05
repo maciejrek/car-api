@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "app",
     "cars_api",
+    "games_api"
 ]
 
 MIDDLEWARE = [
