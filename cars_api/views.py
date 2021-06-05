@@ -82,7 +82,7 @@ class DetailCarGenerics(generics.DestroyAPIView):
             self.perform_destroy(instance)
         except Http404:
             return Response(data={"validation_error": "Record doesn't exist"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(data={"message": "Record deleted"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(data={"message": "Record deleted"}, status=status.HTTP_200_OK)
 
 
 class PopularCarGenerics(generics.ListAPIView):

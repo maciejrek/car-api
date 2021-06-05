@@ -287,7 +287,7 @@ def test_delete_cars_endpoint_positive_case(db_with_multiple_car_records, client
     # remove car with pk=1
     expected_response = {"message": "Record deleted"}
     response = client.delete("/cars/1/")
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
     assert response.data == expected_response
     assert len(Car.objects.all()) == 2
     # get list of cars, verify that there are only 2 in db
