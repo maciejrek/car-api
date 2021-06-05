@@ -13,4 +13,4 @@ COPY . /code/
 ENTRYPOINT [ "/code/entrypoint.sh" ]
 
 # run gunicorn
-# CMD gunicorn restapi.wsgi:application --bind 0.0.0.0:$PORT --timeout 30
+CMD gunicorn app.wsgi:application --bind 0.0.0.0:$PORT --timeout 30
